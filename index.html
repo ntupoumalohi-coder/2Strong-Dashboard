@@ -804,6 +804,7 @@ const api = {
   billing: () => apiRequest("GET", "/billing"),
   profile: () => apiRequest("GET", "/profile"),
   updateProfile: (payload) => apiRequest("PUT", "/profile", payload),
+  changePassword: (payload) => apiRequest("POST", "/auth/change-password", payload),
 };
 
 </script>
@@ -1497,7 +1498,10 @@ function pageProfile(data) {
   const u = data.user;
   return `
     <div class="page-head"><div><h1>Profile</h1><div class="desc">Your agent details and licensing information</div></div>
-      <div class="head-actions"><button class="btn btn-primary" data-modal="profile">Edit Profile</button></div>
+      <div class="head-actions">
+        <button class="btn" data-modal="password">Change Password</button>
+        <button class="btn btn-primary" data-modal="profile">Edit Profile</button>
+      </div>
     </div>
     <div class="grid grid-12">
       <div class="col-span-4 card">
@@ -1626,6 +1630,21 @@ const MODAL_CONFIG = {
     submit: (payload) => api.updateProfile(payload),
     reload: "profile",
   },
+  password: {
+    title: "Change Password",
+    fields: [
+      { key: "currentPassword", label: "Current Password", type: "password", required: true },
+      { key: "newPassword", label: "New Password", type: "password", required: true, placeholder: "At least 8 characters" },
+      { key: "confirmPassword", label: "Confirm New Password", type: "password", required: true, skipInPayload: true },
+    ],
+    validate: (payload) => {
+      if ((payload.newPassword || "").length < 8) return "New password must be at least 8 characters";
+      if (payload.newPassword !== payload.confirmPassword) return "New passwords don't match";
+      return null;
+    },
+    submit: (payload) => api.changePassword(payload),
+    successMessage: "Password updated.",
+  },
 };
 
 function openModal(kind) {
@@ -1673,10 +1692,30 @@ function openModal(kind) {
       payload[f.key] = v;
     });
     const errEl = document.getElementById("modalError");
+    errEl.style.display = "none";
+
+    if (cfg.validate) {
+      const validationError = cfg.validate(payload);
+      if (validationError) {
+        errEl.textContent = validationError;
+        errEl.style.display = "block";
+        return;
+      }
+    }
+
+    const submitPayload = {};
+    cfg.fields.forEach((f) => { if (!f.skipInPayload) submitPayload[f.key] = payload[f.key]; });
+
     try {
-      await cfg.submit(payload);
-      closeModal();
-      await loadAndRenderPage();
+      await cfg.submit(submitPayload);
+      if (cfg.successMessage) {
+        document.getElementById("modalForm").innerHTML =
+          `<div class="cell-sub" style="text-align:center;padding:24px 0;color:var(--green);font-weight:700;">${esc(cfg.successMessage)}</div>`;
+        setTimeout(closeModal, 1100);
+      } else {
+        closeModal();
+        await loadAndRenderPage();
+      }
     } catch (err) {
       errEl.textContent = err.message || "Something went wrong";
       errEl.style.display = "block";
