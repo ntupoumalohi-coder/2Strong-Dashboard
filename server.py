@@ -642,6 +642,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._create_submitted(conn, user, body)
             if path == "/api/eapps":
                 return self._create_eapp(conn, user, body)
+            if path == "/api/auth/change-password":
+                return self._change_password(conn, user, body)
 
             return self._send_json(404, {"error": "Unknown endpoint"})
         finally:
@@ -674,6 +676,22 @@ class Handler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(204)
         self.end_headers()
+
+    def _change_password(self, conn, user, body):
+        current = body.get("currentPassword") or ""
+        new = body.get("newPassword") or ""
+        computed, _ = hash_password(current, user["salt"])
+        if computed != user["password_hash"]:
+            return self._send_json(401, {"error": "Current password is incorrect"})
+        if len(new) < 8:
+            return self._send_json(400, {"error": "New password must be at least 8 characters"})
+        pw_hash, salt = hash_password(new)
+        conn.execute("UPDATE users SET password_hash = ?, salt = ? WHERE id = ?", (pw_hash, salt, user["id"]))
+        # Log out every other session for this user; keep the current one valid.
+        current_token = self._session_token()
+        conn.execute("DELETE FROM sessions WHERE user_id = ? AND token != ?", (user["id"], current_token))
+        conn.commit()
+        return self._send_json(200, {"ok": True})
 
     # -- data assemblers --------------------------------------------------
     def _team(self, conn, user):
