@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>2Strong Financial — Agent Portal</title>
+<meta name="description" content="2Strong Financial agent back-office dashboard — onboarding, training, production tracking, leaderboard, and team management." />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22><rect width=%2224%22 height=%2224%22 rx=%226%22 fill=%22%232563eb%22/><text x=%2212%22 y=%2216.5%22 font-size=%2211%22 font-family=%22Arial%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>2S</text></svg>" />
+<style>
+/* ==========================================================================
+   2Strong Financial — Agent Back-Office Dashboard
+   Design tokens
+   ========================================================================== */
+:root {
+  --navy: #0a1f3f;
+  --navy-2: #14294d;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --blue: #2563eb;
+  --blue-600: #1d4ed8;
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --border: #e6e9ef;
+  --bg: #ffffff;
+  --bg-subtle: #f7f9fc;
+  --green: #16a34a;
+  --green-50: #ecfdf3;
+  --amber: #b45309;
+  --amber-50: #fffbeb;
+  --red: #dc2626;
+  --red-50: #fef2f2;
+  --purple: #7c3aed;
+  --purple-50: #f5f3ff;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+  --sidebar-w: 260px;
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg-subtle);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+ul { list-style: none; margin: 0; padding: 0; }
+h1, h2, h3, h4 { margin: 0; color: var(--navy); font-weight: 700; }
+p { margin: 0; }
+img { max-width: 100%; display: block; }
+
+/* Scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #d7dce4; border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ==========================================================================
+   App shell
+   ========================================================================== */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ---- Sidebar ---- */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 40;
+  transition: transform .25s ease;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, var(--blue), var(--navy));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.brand-text { line-height: 1.15; }
+.brand-text .name { font-weight: 800; font-size: 14.5px; color: var(--navy); letter-spacing: -0.01em; }
+.brand-text .sub { font-size: 11px; color: var(--text-muted); font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px;
+}
+.nav-section-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 12px 10px 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--navy-2);
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 2px;
+  border-left: 3px solid transparent;
+  transition: background .15s ease, color .15s ease;
+}
+.nav-item .ic {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+}
+.nav-item:hover { background: var(--bg-subtle); color: var(--navy); }
+.nav-item:hover .ic { color: var(--navy); }
+.nav-item.active {
+  background: var(--blue-50);
+  color: var(--blue-600);
+  border-left-color: var(--blue);
+}
+.nav-item.active .ic { color: var(--blue); }
+
+.sidebar-footer {
+  padding: 14px;
+  border-top: 1px solid var(--border);
+}
+.role-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+}
+.avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #4f8cf0);
+  color: #fff;
+  font-weight: 700;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.role-card .who { min-width: 0; }
+.role-card .who .n { font-size: 12.5px; font-weight: 700; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.role-card .who .r { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+/* ---- Main column ---- */
+.main-col {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- Topbar ---- */
+.topbar {
+  height: 68px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+.topbar-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.hamburger {
+  display: none;
+  width: 36px; height: 36px;
+  align-items: center; justify-content: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--navy);
+  flex-shrink: 0;
+}
+.page-title { font-size: 18px; font-weight: 800; color: var(--navy); letter-spacing: -0.01em; }
+.page-crumb { font-size: 12px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--navy-2);
+  position: relative;
+}
+.icon-btn .dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red); border: 1.5px solid #fff;
+}
+
+.role-select-wrap { position: relative; }
+.role-select {
+  appearance: none;
+  -webkit-appearance: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--blue-600);
+  background: var(--blue-50);
+  border: 1px solid var(--blue-100);
+  border-radius: 999px;
+  padding: 8px 30px 8px 14px;
+  cursor: pointer;
+}
+.role-select-wrap::after {
+  content: '';
+  position: absolute;
+  right: 12px; top: 50%;
+  width: 7px; height: 7px;
+  border-right: 1.6px solid var(--blue-600);
+  border-bottom: 1.6px solid var(--blue-600);
+  transform: translateY(-65%) rotate(45deg);
+  pointer-events: none;
+}
+
+/* ---- Page content ---- */
+.page-content {
+  padding: 24px;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+.page-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.page-head h1 { font-size: 22px; }
+.page-head .desc { color: var(--text-muted); font-size: 13.5px; margin-top: 4px; }
+.head-actions { display: flex; gap: 10px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 9px 15px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--navy);
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--blue-600); }
+.btn:hover { border-color: #c9d1de; }
+.btn-sm { padding: 6px 11px; font-size: 12px; }
+
+/* ==========================================================================
+   Grid + Cards
+   ========================================================================== */
+.grid { display: grid; gap: 16px; }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-12 { grid-template-columns: repeat(12, 1fr); }
+.col-span-8 { grid-column: span 8; }
+.col-span-4 { grid-column: span 4; }
+.col-span-7 { grid-column: span 7; }
+.col-span-5 { grid-column: span 5; }
+.col-span-6 { grid-column: span 6; }
+
+.card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.card-pad { padding: 20px; }
+.card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 0;
+}
+.card-head h3 { font-size: 14.5px; }
+.card-head .link { font-size: 12.5px; font-weight: 700; color: var(--blue); }
+
+.stat-card {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stat-top { display: flex; align-items: center; justify-content: space-between; }
+.stat-label { font-size: 12.5px; color: var(--text-muted); font-weight: 600; }
+.stat-icon {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.stat-icon.blue { background: var(--blue-50); color: var(--blue); }
+.stat-icon.green { background: var(--green-50); color: var(--green); }
+.stat-icon.amber { background: var(--amber-50); color: var(--amber); }
+.stat-icon.purple { background: var(--purple-50); color: var(--purple); }
+.stat-value { font-size: 25px; font-weight: 800; color: var(--navy); letter-spacing: -0.02em; }
+.stat-foot { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; }
+.stat-foot.up { color: var(--green); }
+.stat-foot.down { color: var(--red); }
+.stat-foot .muted { color: var(--text-muted); font-weight: 500; }
+
+/* ==========================================================================
+   Tables
+   ========================================================================== */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  white-space: nowrap;
+}
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--bg-subtle); }
+.cell-name { font-weight: 700; color: var(--navy); }
+.cell-sub { font-size: 11.5px; color: var(--text-muted); font-weight: 500; }
+.cell-flex { display: flex; align-items: center; gap: 10px; }
+
+/* Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.badge-green { background: var(--green-50); color: var(--green); }
+.badge-blue { background: var(--blue-50); color: var(--blue-600); }
+.badge-amber { background: var(--amber-50); color: var(--amber); }
+.badge-red { background: var(--red-50); color: var(--red); }
+.badge-gray { background: #f1f5f9; color: var(--text-muted); }
+.badge-purple { background: var(--purple-50); color: var(--purple); }
+
+/* Progress bar */
+.progress {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: #eef1f6;
+  overflow: hidden;
+}
+.progress > span { display: block; height: 100%; background: var(--blue); border-radius: 999px; }
+
+/* ==========================================================================
+   Ticker (Leaderboard)
+   ========================================================================== */
+.ticker-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.ticker-row:last-child { border-bottom: none; }
+.rank-pill {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  font-size: 11px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.rank-pill.gold { background: #fef3c7; color: #b45309; }
+.rank-pill.silver { background: #f1f5f9; color: #475569; }
+.rank-pill.bronze { background: #fde3cd; color: #c2410c; }
+.ticker-name { font-weight: 700; font-size: 13px; color: var(--navy); }
+.ticker-sub { font-size: 11.5px; color: var(--text-muted); }
+.ticker-val { margin-left: auto; font-weight: 800; font-size: 13px; color: var(--navy); }
+
+/* ==========================================================================
+   Search / filter bar
+   ========================================================================== */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.search-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  background: var(--bg);
+  min-width: 240px;
+  color: var(--text-muted);
+}
+.search-input input {
+  border: none;
+  outline: none;
+  font-size: 13px;
+  width: 100%;
+  color: var(--text);
+  background: transparent;
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--navy-2);
+}
+
+/* ==========================================================================
+   Profile page
+   ========================================================================== */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+}
+.profile-hero .avatar { width: 68px; height: 68px; font-size: 24px; }
+.profile-hero h2 { font-size: 19px; }
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.info-row:last-child { border-bottom: none; }
+.info-row .k { color: var(--text-muted); font-weight: 600; }
+.info-row .v { color: var(--navy); font-weight: 700; }
+
+/* ==========================================================================
+   Events / Training cards
+   ========================================================================== */
+.event-card { display: flex; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.event-card:last-child { border-bottom: none; }
+.event-date {
+  width: 52px; height: 52px; border-radius: 10px;
+  background: var(--blue-50); color: var(--blue-600);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.event-date .d { font-size: 17px; font-weight: 800; line-height: 1; }
+.event-date .m { font-size: 10px; font-weight: 700; text-transform: uppercase; }
+
+.training-card { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.training-card:last-child { border-bottom: none; }
+.training-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 12px; }
+
+/* Empty / access notes */
+.access-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--amber-50);
+  border: 1px solid #fde8bd;
+  border-radius: var(--radius-sm);
+  color: #92400e;
+  font-size: 12.5px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   Auth / Login screen
+   ========================================================================== */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--bg-subtle) 0%, #eef2f9 100%);
+  padding: 24px;
+}
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  padding: 32px 28px;
+}
+.auth-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+.auth-title { font-size: 20px; margin-bottom: 4px; }
+.auth-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 20px; }
+.auth-form { display: flex; flex-direction: column; gap: 4px; }
+.auth-label { font-size: 12px; font-weight: 700; color: var(--navy-2); margin-top: 10px; margin-bottom: 4px; }
+.auth-input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  width: 100%;
+}
+.auth-input:focus { outline: none; border-color: var(--blue); }
+.auth-error {
+  background: var(--red-50);
+  color: var(--red);
+  border: 1px solid #fbcaca;
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 22px 0 14px;
+  font-size: 11px;
+  color: var(--text-faint);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.demo-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.demo-btn:hover { border-color: var(--blue); background: var(--blue-50); }
+.demo-role { font-size: 10.5px; font-weight: 700; color: var(--blue-600); text-transform: uppercase; letter-spacing: .03em; }
+.demo-name { font-size: 12.5px; font-weight: 700; color: var(--navy); }
+
+.loading-block {
+  padding: 60px 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Modal
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 31, 63, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 20px;
+}
+.modal-card {
+  width: 100%;
+  max-width: 440px;
+  background: var(--bg);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-head h3 { font-size: 15.5px; }
+.modal-form { padding: 18px 20px 20px; }
+.form-field { margin-bottom: 14px; }
+.form-field label { display: block; font-size: 12px; font-weight: 700; color: var(--navy-2); margin-bottom: 5px; }
+.form-field input, .form-field select {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg);
+}
+.form-field input:focus, .form-field select:focus { outline: none; border-color: var(--blue); }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10, 31, 63, 0.35);
+  z-index: 35;
+}
+
+@media (max-width: 1100px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .col-span-8, .col-span-7 { grid-column: span 12; }
+  .col-span-4, .col-span-5 { grid-column: span 12; }
+  .grid-12 { grid-template-columns: repeat(12, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 82%;
+    max-width: 300px;
+  }
+  .app-shell.nav-open .sidebar { transform: translateX(0); box-shadow: 0 0 0 100vmax rgba(0,0,0,0); }
+  .app-shell.nav-open .overlay { display: block; }
+  .main-col { margin-left: 0; }
+  .hamburger { display: flex; }
+  .page-content { padding: 16px; }
+  .topbar { padding: 0 16px; }
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .role-select-wrap { display: none; }
+  .page-head { flex-direction: column; align-items: stretch; }
+  .head-actions { justify-content: flex-start; }
+  .demo-grid { grid-template-columns: 1fr; }
+  .auth-card { padding: 24px 20px; }
+}
+
+@media (min-width: 769px) and (max-width: 1100px) {
+  .role-select .role-full { display: none; }
+}
+
+</style>
+</head>
+<body>
+<div id="app" class="app-shell"></div>
+
+<script>
+/* ==========================================================================
+   Minimal hand-rolled line-icon set (no external dependency).
+   Each returns an inline SVG string, 18x18 viewBox, stroke=currentColor.
+   ========================================================================== */
+function svgIcon(paths, vb = 24) {
+  return `<svg viewBox="0 0 ${vb} ${vb}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`;
+}
+
+const ICONS = {
+  home: svgIcon('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-6h5v6"/>'),
+  users: svgIcon('<circle cx="8.5" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M14.8 14.2c2.6.3 4.7 2.4 4.7 5.8"/>'),
+  userPlus: svgIcon('<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.6 2.7-6 6-6s6 2.4 6 6"/><path d="M18 8.5v6M15 11.5h6"/>'),
+  briefcase: svgIcon('<rect x="3" y="8" width="18" height="11" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/>'),
+  dollar: svgIcon('<path d="M12 2.5v19"/><path d="M16.5 6.5c0-1.7-2-2.8-4.5-2.8s-4.5 1.2-4.5 3.1c0 4 9 2.2 9 6.1 0 2-2 3.2-4.5 3.2s-4.7-1.1-4.7-2.9"/>'),
+  fileCheck: svgIcon('<path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v4h4"/><path d="M9.5 14.5l2 2 3.5-4"/>'),
+  fileText: svgIcon('<path d="M7 3h7l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 16.5h6"/>'),
+  trophy: svgIcon('<path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 5H5a3 3 0 0 0 3 5"/><path d="M16 5h3a3 3 0 0 1-3 5"/><path d="M12 13v3.5"/><path d="M8.5 20.5h7"/><path d="M9.5 17h5l1 3.5h-7l1-3.5Z"/>'),
+  calendar: svgIcon('<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 9.5h17"/><path d="M8 3v4M16 3v4"/>'),
+  book: svgIcon('<path d="M4 5.5C4 4.7 4.7 4 6.5 4H12v15.5H6.5C4.7 19.5 4 18.8 4 18V5.5Z"/><path d="M20 5.5c0-.8-.7-1.5-2.5-1.5H12v15.5h5.5c1.8 0 2.5-.7 2.5-1.5V5.5Z"/>'),
+  card: svgIcon('<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 9.5h18"/><path d="M6.5 14.5h4"/>'),
+  user: svgIcon('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c0-4.1 3.4-7 7.5-7s7.5 2.9 7.5 7"/>'),
+  menu: svgIcon('<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17"/>'),
+  bell: svgIcon('<path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 14 6 10Z"/><path d="M10 19a2 2 0 0 0 4 0"/>'),
+  search: svgIcon('<circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/>'),
+  chevronDown: svgIcon('<path d="M5 8.5 12 15l7-6.5"/>'),
+  arrowUpRight: svgIcon('<path d="M6 18 18 6"/><path d="M8 6h10v10"/>'),
+  arrowDownRight: svgIcon('<path d="M6 6 18 18"/><path d="M18 8V18H8"/>'),
+  checkCircle: svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.3l2.4 2.4 5-5.4"/>'),
+  clock: svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>'),
+  xCircle: svgIcon('<circle cx="12" cy="12" r="8.5"/><path d="M9.5 9.5l5 5M14.5 9.5l-5 5"/>'),
+  plus: svgIcon('<path d="M12 5v14M5 12h14"/>'),
+  download: svgIcon('<path d="M12 4v11"/><path d="M7.5 11.5 12 16l4.5-4.5"/><path d="M4.5 18.5h15"/>'),
+  mail: svgIcon('<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>'),
+  phone: svgIcon('<path d="M6 3.5h3l1.5 4-2 1.5a12 12 0 0 0 5.5 5.5l1.5-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5A16.5 16.5 0 0 1 4.5 5.1 1.5 1.5 0 0 1 6 3.5Z"/>'),
+  building: svgIcon('<rect x="4" y="3.5" width="10" height="17" rx="1"/><path d="M14 9h6v11.5H14"/><path d="M7 7.5h.01M11 7.5h.01M7 11h.01M11 11h.01M7 14.5h.01M11 14.5h.01"/>'),
+  shield: svgIcon('<path d="M12 3.5 19 6.5V11c0 5-3 8-7 9.5-4-1.5-7-4.5-7-9.5V6.5L12 3.5Z"/><path d="M9 11.5l2 2 4-4.3"/>'),
+  star: svgIcon('<path d="M12 3.5l2.6 5.4 5.9.7-4.3 4.1 1.1 5.9-5.3-2.9-5.3 2.9 1.1-5.9-4.3-4.1 5.9-.7L12 3.5Z"/>'),
+  trendingUp: svgIcon('<path d="M4 16.5 10 10l4 4 6.5-7.5"/><path d="M15.5 6h5v5"/>'),
+  mapPin: svgIcon('<path d="M12 21s7-6.4 7-11.5a7 7 0 0 0-14 0C5 14.6 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.4"/>'),
+  logout: svgIcon('<path d="M9 20H5.5a1.5 1.5 0 0 1-1.5-1.5v-13A1.5 1.5 0 0 1 5.5 4H9"/><path d="M15.5 16.5 20 12l-4.5-4.5"/><path d="M20 12H9"/>'),
+  filter: svgIcon('<path d="M4 5.5h16l-6 7.5v5l-4 2v-7L4 5.5Z"/>'),
+  refresh: svgIcon('<path d="M4.5 12a7.5 7.5 0 0 1 13-5.2M19.5 12a7.5 7.5 0 0 1-13 5.2"/><path d="M17 4v3h-3M7 20v-3h3"/>'),
+};
+
+</script>
+<script>
+/* ==========================================================================
+   2Strong Financial — API client (talks to backend/server.py)
+   ========================================================================== */
+const API_BASE = "/api";
+
+class AuthRequiredError extends Error {}
+
+async function apiRequest(method, path, body) {
+  const opts = {
+    method,
+    credentials: "same-origin",
+    headers: {},
+  };
+  if (body !== undefined) {
+    opts.headers["Content-Type"] = "application/json";
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(API_BASE + path, opts);
+  if (res.status === 401) throw new AuthRequiredError("Authentication required");
+  let data = null;
+  try { data = await res.json(); } catch (e) { data = null; }
+  if (!res.ok) {
+    const msg = (data && data.error) || `Request failed (${res.status})`;
+    throw new Error(msg);
+  }
+  return data;
+}
+
+const api = {
+  me: () => apiRequest("GET", "/auth/me"),
+  demoAccounts: () => apiRequest("GET", "/demo-accounts"),
+  login: (username, password) => apiRequest("POST", "/auth/login", { username, password }),
+  logout: () => apiRequest("POST", "/auth/logout"),
+
+  dashboard: () => apiRequest("GET", "/dashboard"),
+  team: () => apiRequest("GET", "/team"),
+  prospects: () => apiRequest("GET", "/prospects"),
+  createProspect: (payload) => apiRequest("POST", "/prospects", payload),
+  clients: () => apiRequest("GET", "/clients"),
+  createClient: (payload) => apiRequest("POST", "/clients", payload),
+  commissions: () => apiRequest("GET", "/commissions"),
+  submitted: () => apiRequest("GET", "/submitted"),
+  createSubmitted: (payload) => apiRequest("POST", "/submitted", payload),
+  eapps: () => apiRequest("GET", "/eapps"),
+  createEapp: (payload) => apiRequest("POST", "/eapps", payload),
+  leaderboard: () => apiRequest("GET", "/leaderboard"),
+  events: () => apiRequest("GET", "/events"),
+  training: () => apiRequest("GET", "/training"),
+  billing: () => apiRequest("GET", "/billing"),
+  profile: () => apiRequest("GET", "/profile"),
+  updateProfile: (payload) => apiRequest("PUT", "/profile", payload),
+};
+
+</script>
+<script>
+/* ==========================================================================
+   2Strong Financial — Agent Back-Office Dashboard
+   App shell, routing, and page renderers. Data is live, fetched from the
+   Python backend in /backend via js/api.js (see that file for endpoints).
+   ========================================================================== */
+
+const ROLES = {
+  ADMIN: "Admin",
+  PARTNER: "Agency Partner",
+  SENIOR: "Senior Producer",
+  ASSOCIATE: "Associate",
+};
+
+const state = {
+  user: null,
+  route: "dashboard",
+  navOpen: false,
+  loading: false,
+};
+
+/* -------------------------------------------------------------------------
+   Navigation config
+   ------------------------------------------------------------------------- */
+const NAV_SECTIONS = [
+  {
+    label: "Overview",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: "home" },
+      { id: "team", label: "My Team", icon: "users", hideFor: [ROLES.ASSOCIATE] },
+    ],
+  },
+  {
+    label: "Business",
+    items: [
+      { id: "prospects", label: "My Prospects", icon: "userPlus" },
+      { id: "clients", label: "My Clients", icon: "briefcase" },
+      { id: "commissions", label: "Commissions", icon: "dollar" },
+      { id: "submitted", label: "Submitted Business", icon: "fileCheck" },
+      { id: "eapps", label: "E-Applications", icon: "fileText" },
+    ],
+  },
+  {
+    label: "Growth",
+    items: [
+      { id: "leaderboard", label: "Leaderboard", icon: "trophy" },
+      { id: "events", label: "Events", icon: "calendar" },
+      { id: "training", label: "Training", icon: "book" },
+    ],
+  },
+  {
+    label: "Account",
+    items: [
+      { id: "billing", label: "Billing", icon: "card" },
+      { id: "profile", label: "Profile", icon: "user" },
+    ],
+  },
+];
+
+const PAGE_META = {
+  dashboard: { title: "Dashboard", crumb: "Overview / Dashboard" },
+  team: { title: "My Team", crumb: "Overview / My Team" },
+  prospects: { title: "My Prospects", crumb: "Business / My Prospects" },
+  clients: { title: "My Clients", crumb: "Business / My Clients" },
+  commissions: { title: "Commissions", crumb: "Business / Commissions" },
+  submitted: { title: "Submitted Business", crumb: "Business / Submitted Business" },
+  eapps: { title: "E-Applications", crumb: "Business / E-Applications" },
+  leaderboard: { title: "Leaderboard", crumb: "Growth / Leaderboard" },
+  events: { title: "Events", crumb: "Growth / Events" },
+  training: { title: "Training", crumb: "Growth / Training" },
+  billing: { title: "Billing", crumb: "Account / Billing" },
+  profile: { title: "Profile", crumb: "Account / Profile" },
+};
+
+const PAGE_LOADERS = {
+  dashboard: () => api.dashboard(),
+  team: () => api.team(),
+  prospects: () => api.prospects(),
+  clients: () => api.clients(),
+  commissions: () => api.commissions(),
+  submitted: () => api.submitted(),
+  eapps: () => api.eapps(),
+  leaderboard: () => api.leaderboard(),
+  events: () => api.events(),
+  training: () => api.training(),
+  billing: () => api.billing(),
+  profile: () => api.profile(),
+};
+
+const PAGE_RENDERERS = {
+  dashboard: pageDashboard,
+  team: pageTeam,
+  prospects: pageProspects,
+  clients: pageClients,
+  commissions: pageCommissions,
+  submitted: pageSubmitted,
+  eapps: pageEapps,
+  leaderboard: pageLeaderboard,
+  events: pageEvents,
+  training: pageTraining,
+  billing: pageBilling,
+  profile: pageProfile,
+};
+
+/* -------------------------------------------------------------------------
+   Helpers
+   ------------------------------------------------------------------------- */
+function fmtMoney(n, decimals = 0) {
+  return "$" + Number(n || 0).toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+function fmtNum(n) { return Number(n || 0).toLocaleString("en-US"); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+function statusBadge(status) {
+  const map = {
+    Active: "green", "In Force": "green", Paid: "green", Approved: "green", Submitted: "green", Completed: "green",
+    Pending: "amber", Processing: "amber", "In Progress": "amber", "In Underwriting": "amber", "Pending License": "amber", "Awaiting E-Sign": "amber",
+    "Not Started": "gray", Draft: "gray", Inactive: "gray",
+    Lapsed: "red", Declined: "red", Chargeback: "red", "Requires Info": "red",
+    "New Lead": "blue", Contacted: "blue", "Appointment Set": "blue", Quoted: "purple", "Not Interested": "gray",
+  };
+  const tone = map[status] || "gray";
+  return `<span class="badge badge-${tone}">${esc(status)}</span>`;
+}
+
+function initialsAvatar(initials, size) {
+  const style = size ? `style="width:${size}px;height:${size}px;font-size:${Math.round(size * 0.36)}px"` : "";
+  return `<div class="avatar" ${style}>${esc(initials)}</div>`;
+}
+
+/* -------------------------------------------------------------------------
+   Login screen
+   ------------------------------------------------------------------------- */
+async function renderLogin() {
+  const root = document.getElementById("app");
+  root.className = "auth-shell";
+  root.innerHTML = `
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-mark">2S</div>
+        <div class="brand-text">
+          <div class="name">2Strong Financial</div>
+          <div class="sub">Agent Portal</div>
+        </div>
+      </div>
+      <h1 class="auth-title">Sign in</h1>
+      <p class="auth-sub">Use your agent credentials, or jump in as a demo account below.</p>
+      <form id="loginForm" class="auth-form">
+        <label class="auth-label">Username</label>
+        <input class="auth-input" id="loginUsername" type="text" placeholder="e.g. jordan.blake" autocomplete="username" required />
+        <label class="auth-label">Password</label>
+        <input class="auth-input" id="loginPassword" type="password" placeholder="Password" autocomplete="current-password" required />
+        <div id="loginError" class="auth-error" style="display:none;"></div>
+        <button class="btn btn-primary" type="submit" style="width:100%;justify-content:center;margin-top:6px;">Sign In</button>
+      </form>
+      <div class="auth-divider"><span>or continue as a demo agent</span></div>
+      <div id="demoAccounts" class="demo-grid"><div class="cell-sub">Loading demo accounts…</div></div>
+    </div>
+  `;
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("loginUsername").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    await doLogin(username, password);
+  });
+
+  try {
+    const res = await api.demoAccounts();
+    const grid = document.getElementById("demoAccounts");
+    grid.innerHTML = res.accounts.map((a) => `
+      <button class="demo-btn" data-username="${esc(a.username)}">
+        <span class="demo-role">${esc(a.role)}</span>
+        <span class="demo-name">${esc(a.name)}</span>
+      </button>
+    `).join("");
+    grid.querySelectorAll(".demo-btn").forEach((btn) => {
+      btn.addEventListener("click", () => doLogin(btn.dataset.username, res.password));
+    });
+  } catch (e) {
+    document.getElementById("demoAccounts").innerHTML = `<div class="cell-sub">Could not load demo accounts.</div>`;
+  }
+}
+
+async function doLogin(username, password) {
+  const errEl = document.getElementById("loginError");
+  if (errEl) errEl.style.display = "none";
+  try {
+    const res = await api.login(username, password);
+    state.user = res.user;
+    location.hash = "#/dashboard";
+    await render();
+  } catch (e) {
+    if (errEl) {
+      errEl.textContent = e.message || "Sign in failed";
+      errEl.style.display = "block";
+    }
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Sidebar / Topbar
+   ------------------------------------------------------------------------- */
+function renderSidebar() {
+  const user = state.user;
+  const sections = NAV_SECTIONS.map((sec) => {
+    const items = sec.items.filter((it) => !(it.hideFor || []).includes(user.role));
+    if (!items.length) return "";
+    const rows = items
+      .map((it) => {
+        const active = state.route === it.id ? "active" : "";
+        return `<a href="#/${it.id}" class="nav-item ${active}"><span class="ic">${ICONS[it.icon]}</span><span>${it.label}</span></a>`;
+      })
+      .join("");
+    return `<div class="nav-section-label">${sec.label}</div>${rows}`;
+  }).join("");
+
+  return `
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-mark">2S</div>
+        <div class="brand-text">
+          <div class="name">2Strong Financial</div>
+          <div class="sub">Agent Portal</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">${sections}</nav>
+      <div class="sidebar-footer">
+        <a href="#/profile" class="role-card" style="cursor:pointer;">
+          ${initialsAvatar(user.initials)}
+          <div class="who">
+            <div class="n">${esc(user.name)}</div>
+            <div class="r">${esc(user.role)}</div>
+          </div>
+        </a>
+        <button class="btn btn-sm" id="logoutBtn" style="width:100%;justify-content:center;margin-top:10px;">${ICONS.logout} Log Out</button>
+      </div>
+    </aside>
+    <div class="overlay" id="overlay"></div>
+  `;
+}
+
+function renderTopbar() {
+  const meta = PAGE_META[state.route] || PAGE_META.dashboard;
+  return `
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="hamburger" id="hamburgerBtn">${ICONS.menu}</button>
+        <div>
+          <div class="page-title">${esc(meta.title)}</div>
+          <div class="page-crumb">${esc(meta.crumb)}</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <span class="badge badge-blue" title="Signed in role">${esc(state.user.role)}</span>
+        <button class="icon-btn" title="Search">${ICONS.search}</button>
+        <button class="icon-btn" title="Notifications">${ICONS.bell}<span class="dot"></span></button>
+        ${initialsAvatar(state.user.initials, 36)}
+      </div>
+    </header>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Dashboard
+   ------------------------------------------------------------------------- */
+function pageDashboard(data) {
+  const user = state.user;
+  const teamCardValue = user.role === ROLES.ASSOCIATE ? "—" : fmtNum(data.teamCount);
+  const teamCardFoot = user.role === ROLES.ASSOCIATE
+    ? `<span class="muted">No downline yet</span>`
+    : `<span class="up">${ICONS.arrowUpRight}</span><span class="muted">${data.activeAgents} active</span>`;
+
+  return `
+    <div class="page-head">
+      <div>
+        <h1>Welcome back, ${esc(user.name.split(" ")[0])}</h1>
+        <div class="desc">Here's what's happening across your book of business today.</div>
+      </div>
+      <div class="head-actions">
+        <button class="btn">${ICONS.download} Export</button>
+        <button class="btn btn-primary" data-modal="prospect">${ICONS.plus} New Prospect</button>
+      </div>
+    </div>
+
+    <div class="grid grid-4" style="margin-bottom:16px;">
+      <div class="card stat-card">
+        <div class="stat-top"><span class="stat-label">My Team</span><span class="stat-icon blue">${ICONS.users}</span></div>
+        <div class="stat-value">${teamCardValue}</div>
+        <div class="stat-foot">${teamCardFoot}</div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-top"><span class="stat-label">Total Commissions (YTD)</span><span class="stat-icon green">${ICONS.dollar}</span></div>
+        <div class="stat-value">${fmtMoney(data.totalCommission)}</div>
+        <div class="stat-foot up">${ICONS.arrowUpRight}<span class="muted">${fmtMoney(data.paidCommission)} paid</span></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-top"><span class="stat-label">Active Agents</span><span class="stat-icon purple">${ICONS.shield}</span></div>
+        <div class="stat-value">${user.role === ROLES.ASSOCIATE ? "1" : fmtNum(data.activeAgents)}</div>
+        <div class="stat-foot"><span class="muted">${user.role === ROLES.ASSOCIATE ? "Just you" : "in your organization"}</span></div>
+      </div>
+      <div class="card stat-card">
+        <div class="stat-top"><span class="stat-label">Submitted Business</span><span class="stat-icon amber">${ICONS.fileCheck}</span></div>
+        <div class="stat-value">${fmtNum(data.submittedCount)}</div>
+        <div class="stat-foot up">${ICONS.arrowUpRight}<span class="muted">${data.approvedCount} approved</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-12">
+      <div class="col-span-8 card">
+        <div class="card-head"><h3>Recent Commissions</h3><a href="#/commissions" class="link">View all</a></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Client</th><th>Agent</th><th>Carrier</th><th>Commission</th><th>Status</th></tr></thead>
+            <tbody>
+              ${data.recentCommissions.map((c) => `
+                <tr>
+                  <td class="cell-name">${esc(c.client)}</td>
+                  <td>${esc(c.agent)}</td>
+                  <td>${esc(c.carrier)}</td>
+                  <td style="font-weight:700;color:var(--navy)">${fmtMoney(c.commission)}</td>
+                  <td>${statusBadge(c.status)}</td>
+                </tr>`).join("") || `<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:24px;">No commission activity yet</td></tr>`}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-span-4 card">
+        <div class="card-head"><h3>Leaderboard</h3><a href="#/leaderboard" class="link">Full board</a></div>
+        <div style="padding-top:8px;">
+          ${data.leaderboardTop5.map((a) => {
+            const rankClass = a.rank === 1 ? "gold" : a.rank === 2 ? "silver" : a.rank === 3 ? "bronze" : "";
+            return `
+            <div class="ticker-row">
+              <span class="rank-pill ${rankClass}">${a.rank}</span>
+              ${initialsAvatar(a.initials, 30)}
+              <div>
+                <div class="ticker-name">${esc(a.name)}</div>
+                <div class="ticker-sub">${esc(a.tier)}</div>
+              </div>
+              <span class="ticker-val">${fmtMoney(a.ytd)}</span>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: My Team
+   ------------------------------------------------------------------------- */
+function pageTeam(data) {
+  const team = data.team;
+  if (!team.length) {
+    return emptyState("My Team", "You don't have any agents reporting to you yet. Once you recruit or sponsor an agent, they'll appear here.", "users");
+  }
+  return `
+    <div class="page-head">
+      <div><h1>My Team</h1><div class="desc">${team.length} agent${team.length === 1 ? "" : "s"} in your downline</div></div>
+      <div class="head-actions"><button class="btn btn-primary">${ICONS.plus} Invite Agent</button></div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Agent</th><th>Tier</th><th>Status</th><th>YTD Production</th><th>Policies</th><th>Joined</th></tr></thead>
+          <tbody>
+            ${team.map((t) => `
+              <tr>
+                <td><div class="cell-flex">${initialsAvatar(t.initials, 32)}<div><div class="cell-name">${esc(t.name)}</div><div class="cell-sub">${esc(t.email)}</div></div></div></td>
+                <td>${esc(t.tier)}</td>
+                <td>${statusBadge(t.status)}</td>
+                <td style="font-weight:700;color:var(--navy)">${fmtMoney(t.ytd)}</td>
+                <td>${t.policies}</td>
+                <td>${esc(t.joinDate)}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: My Prospects
+   ------------------------------------------------------------------------- */
+function pageProspects(data) {
+  const rows = data.prospects;
+  return `
+    <div class="page-head">
+      <div><h1>My Prospects</h1><div class="desc">${rows.length} prospects in your pipeline</div></div>
+      <div class="head-actions"><button class="btn btn-primary" data-modal="prospect">${ICONS.plus} Add Prospect</button></div>
+    </div>
+    ${toolbar("Search prospects...")}
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Stage</th><th>Source</th><th>Agent</th><th>Est. Premium</th><th>Last Contact</th></tr></thead>
+          <tbody>
+            ${rows.map((p) => `
+              <tr>
+                <td><div class="cell-name">${esc(p.name)}</div><div class="cell-sub">${esc(p.phone)}</div></td>
+                <td>${statusBadge(p.stage)}</td>
+                <td>${esc(p.source)}</td>
+                <td>${esc(p.agent)}</td>
+                <td style="font-weight:700;color:var(--navy)">${fmtMoney(p.premium)}</td>
+                <td>${esc(p.lastContact)}</td>
+              </tr>`).join("") || emptyRow(6)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: My Clients
+   ------------------------------------------------------------------------- */
+function pageClients(data) {
+  const rows = data.clients;
+  return `
+    <div class="page-head">
+      <div><h1>My Clients</h1><div class="desc">${rows.length} active client relationships</div></div>
+      <div class="head-actions"><button class="btn btn-primary" data-modal="client">${ICONS.plus} Add Client</button></div>
+    </div>
+    ${toolbar("Search clients...")}
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Client</th><th>Policy Type</th><th>Carrier</th><th>Premium</th><th>Status</th><th>Agent</th><th>Effective</th></tr></thead>
+          <tbody>
+            ${rows.map((c) => `
+              <tr>
+                <td class="cell-name">${esc(c.name)}</td>
+                <td>${esc(c.policyType)}</td>
+                <td>${esc(c.carrier)}</td>
+                <td style="font-weight:700;color:var(--navy)">${fmtMoney(c.premium)}</td>
+                <td>${statusBadge(c.status)}</td>
+                <td>${esc(c.agent)}</td>
+                <td>${esc(c.effective)}</td>
+              </tr>`).join("") || emptyRow(7)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Commissions
+   ------------------------------------------------------------------------- */
+function pageCommissions(data) {
+  const rows = data.commissions;
+  const total = rows.reduce((s, c) => s + c.commission, 0);
+  const paid = rows.filter((c) => c.status === "Paid").reduce((s, c) => s + c.commission, 0);
+  const pending = rows.filter((c) => c.status === "Processing" || c.status === "Pending").reduce((s, c) => s + c.commission, 0);
+  return `
+    <div class="page-head">
+      <div><h1>Commissions</h1><div class="desc">Commission activity and payout history</div></div>
+      <div class="head-actions"><button class="btn">${ICONS.download} Export Statement</button></div>
+    </div>
+    <div class="grid grid-3" style="margin-bottom:16px;">
+      <div class="card stat-card"><div class="stat-top"><span class="stat-label">Total YTD</span><span class="stat-icon blue">${ICONS.dollar}</span></div><div class="stat-value">${fmtMoney(total)}</div></div>
+      <div class="card stat-card"><div class="stat-top"><span class="stat-label">Paid Out</span><span class="stat-icon green">${ICONS.checkCircle}</span></div><div class="stat-value">${fmtMoney(paid)}</div></div>
+      <div class="card stat-card"><div class="stat-top"><span class="stat-label">Pending / Processing</span><span class="stat-icon amber">${ICONS.clock}</span></div><div class="stat-value">${fmtMoney(pending)}</div></div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Agent</th><th>Carrier / Product</th><th>Premium</th><th>Commission</th><th>Status</th></tr></thead>
+          <tbody>
+            ${rows.map((c) => `
+              <tr>
+                <td class="cell-sub" style="font-weight:700;color:var(--navy-2)">${esc(c.id)}</td>
+                <td>${esc(c.date)}</td>
+                <td class="cell-name">${esc(c.client)}</td>
+                <td>${esc(c.agent)}</td>
+                <td><div>${esc(c.carrier)}</div><div class="cell-sub">${esc(c.product)}</div></td>
+                <td>${fmtMoney(c.premium)}</td>
+                <td style="font-weight:700;color:var(--navy)">${fmtMoney(c.commission)}</td>
+                <td>${statusBadge(c.status)}</td>
+              </tr>`).join("") || emptyRow(8)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Submitted Business
+   ------------------------------------------------------------------------- */
+function pageSubmitted(data) {
+  const rows = data.submitted;
+  return `
+    <div class="page-head">
+      <div><h1>Submitted Business</h1><div class="desc">Track applications from submission through underwriting</div></div>
+      <div class="head-actions"><button class="btn btn-primary" data-modal="submitted">${ICONS.plus} Submit New Business</button></div>
+    </div>
+    ${toolbar("Search submitted business...")}
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Date</th><th>Client</th><th>Agent</th><th>Carrier</th><th>Product</th><th>Face Amount</th><th>Status</th></tr></thead>
+          <tbody>
+            ${rows.map((s) => `
+              <tr>
+                <td class="cell-sub" style="font-weight:700;color:var(--navy-2)">${esc(s.id)}</td>
+                <td>${esc(s.date)}</td>
+                <td class="cell-name">${esc(s.client)}</td>
+                <td>${esc(s.agent)}</td>
+                <td>${esc(s.carrier)}</td>
+                <td>${esc(s.product)}</td>
+                <td>${s.faceAmount ? fmtMoney(s.faceAmount) : "—"}</td>
+                <td>${statusBadge(s.status)}</td>
+              </tr>`).join("") || emptyRow(8)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: E-Applications
+   ------------------------------------------------------------------------- */
+function pageEapps(data) {
+  const rows = data.eapps;
+  return `
+    <div class="page-head">
+      <div><h1>E-Applications</h1><div class="desc">Digital application status and e-signature tracking</div></div>
+      <div class="head-actions"><button class="btn btn-primary" data-modal="eapp">${ICONS.plus} Start E-App</button></div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Client</th><th>Agent</th><th>Carrier</th><th>Started</th><th>Progress</th><th>Status</th></tr></thead>
+          <tbody>
+            ${rows.map((e) => `
+              <tr>
+                <td class="cell-sub" style="font-weight:700;color:var(--navy-2)">${esc(e.id)}</td>
+                <td class="cell-name">${esc(e.client)}</td>
+                <td>${esc(e.agent)}</td>
+                <td>${esc(e.carrier)}</td>
+                <td>${esc(e.started)}</td>
+                <td style="min-width:140px;"><div class="progress"><span style="width:${e.progress}%"></span></div><div class="cell-sub" style="margin-top:4px;">${e.progress}%</div></td>
+                <td>${statusBadge(e.status)}</td>
+              </tr>`).join("") || emptyRow(7)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Leaderboard
+   ------------------------------------------------------------------------- */
+function pageLeaderboard(data) {
+  const rows = data.leaderboard;
+  return `
+    <div class="page-head">
+      <div><h1>Leaderboard</h1><div class="desc">Agency-wide YTD production ranking</div></div>
+      <div class="head-actions">
+        <button class="filter-chip">${ICONS.filter} This Year</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Rank</th><th>Agent</th><th>Tier</th><th>Policies</th><th>YTD Production</th></tr></thead>
+          <tbody>
+            ${rows.map((a) => {
+              const rankClass = a.rank === 1 ? "gold" : a.rank === 2 ? "silver" : a.rank === 3 ? "bronze" : "";
+              return `
+              <tr>
+                <td><span class="rank-pill ${rankClass}">${a.rank}</span></td>
+                <td><div class="cell-flex">${initialsAvatar(a.initials, 30)}<span class="cell-name">${esc(a.name)}</span></div></td>
+                <td>${esc(a.tier)}</td>
+                <td>${a.policies}</td>
+                <td style="font-weight:800;color:var(--navy)">${fmtMoney(a.ytd)}</td>
+              </tr>`;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Events
+   ------------------------------------------------------------------------- */
+function pageEvents(data) {
+  const rows = data.events;
+  return `
+    <div class="page-head">
+      <div><h1>Events</h1><div class="desc">Upcoming training sessions, launches, and team events</div></div>
+      <div class="head-actions"><button class="btn btn-primary">${ICONS.plus} Add to Calendar</button></div>
+    </div>
+    <div class="card">
+      ${rows.map((e) => `
+        <div class="event-card">
+          <div class="event-date"><div class="d">${e.day}</div><div class="m">${e.month}</div></div>
+          <div style="flex:1;min-width:0;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <div class="cell-name" style="font-size:14.5px;">${esc(e.title)}</div>
+              <span class="badge badge-blue">${esc(e.type)}</span>
+            </div>
+            <div class="cell-sub" style="margin-top:4px;">${esc(e.date)} &nbsp;·&nbsp; ${esc(e.time)} &nbsp;·&nbsp; ${esc(e.location)}</div>
+          </div>
+          <button class="btn btn-sm">Details</button>
+        </div>`).join("")}
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Training
+   ------------------------------------------------------------------------- */
+function pageTraining(data) {
+  const rows = data.training;
+  const completed = rows.filter((t) => t.status === "Completed").length;
+  return `
+    <div class="page-head">
+      <div><h1>Training</h1><div class="desc">${completed} of ${rows.length} modules completed</div></div>
+    </div>
+    <div class="card">
+      ${rows.map((t) => `
+        <div class="training-card">
+          <div class="training-top">
+            <div>
+              <div class="cell-name" style="font-size:14px;">${esc(t.title)}</div>
+              <div class="cell-sub" style="margin-top:2px;">${esc(t.category)} &nbsp;·&nbsp; ${esc(t.due)}</div>
+            </div>
+            ${statusBadge(t.status)}
+          </div>
+          <div class="progress"><span style="width:${t.progress}%"></span></div>
+        </div>`).join("")}
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Billing
+   ------------------------------------------------------------------------- */
+function pageBilling(data) {
+  const summary = data.summary;
+  return `
+    <div class="page-head">
+      <div><h1>Billing</h1><div class="desc">Manage your subscription and view invoice history</div></div>
+      <div class="head-actions"><button class="btn">${ICONS.card} Update Payment Method</button></div>
+    </div>
+    <div class="grid grid-12" style="margin-bottom:16px;">
+      <div class="col-span-4 card card-pad">
+        <div class="stat-label" style="margin-bottom:6px;">Current Plan</div>
+        <h3 style="font-size:16px;margin-bottom:10px;">${esc(summary.planName)}</h3>
+        <div class="cell-sub">Next charge</div>
+        <div style="font-weight:800;color:var(--navy);font-size:18px;margin:2px 0 10px;">${fmtMoney(summary.nextChargeAmount, 2)} <span style="font-size:12px;color:var(--text-muted);font-weight:600;">on ${esc(summary.nextChargeDate)}</span></div>
+        <div class="cell-sub">Payment method: ${esc(summary.paymentMethod)}</div>
+      </div>
+      <div class="col-span-8 card">
+        <div class="card-head"><h3>Invoice History</h3></div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Invoice</th><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              ${data.invoices.map((b) => `
+                <tr>
+                  <td class="cell-sub" style="font-weight:700;color:var(--navy-2)">${esc(b.id)}</td>
+                  <td>${esc(b.date)}</td>
+                  <td>${esc(b.desc)}</td>
+                  <td style="font-weight:700;color:var(--navy)">${fmtMoney(b.amount, 2)}</td>
+                  <td>${statusBadge(b.status === "Paid" ? "Paid" : "Pending")}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Page: Profile
+   ------------------------------------------------------------------------- */
+function pageProfile(data) {
+  const u = data.user;
+  return `
+    <div class="page-head"><div><h1>Profile</h1><div class="desc">Your agent details and licensing information</div></div>
+      <div class="head-actions"><button class="btn btn-primary" data-modal="profile">Edit Profile</button></div>
+    </div>
+    <div class="grid grid-12">
+      <div class="col-span-4 card">
+        <div class="profile-hero">
+          ${initialsAvatar(u.initials, 68)}
+          <div>
+            <h2>${esc(u.name)}</h2>
+            <div class="cell-sub" style="margin:4px 0 8px;">${esc(u.role)} &nbsp;·&nbsp; ${esc(u.agentId)}</div>
+            <span class="badge badge-green">${esc(u.status)}</span>
+          </div>
+        </div>
+        <div>
+          <div class="info-row"><span class="k">Email</span><span class="v">${esc(u.email)}</span></div>
+          <div class="info-row"><span class="k">Phone</span><span class="v">${esc(u.phone)}</span></div>
+          <div class="info-row"><span class="k">Agency</span><span class="v">${esc(u.agency)}</span></div>
+          <div class="info-row"><span class="k">Joined</span><span class="v">${esc(u.joinDate)}</span></div>
+        </div>
+      </div>
+      <div class="col-span-8 card">
+        <div class="card-head"><h3>Licensing &amp; Compliance</h3></div>
+        <div>
+          <div class="info-row"><span class="k">NPN</span><span class="v">${esc(u.npn)}</span></div>
+          <div class="info-row"><span class="k">Licensed States</span><span class="v">${u.licenseStates.map((s) => `<span class="badge badge-blue" style="margin-left:4px;">${s}</span>`).join("")}</span></div>
+          <div class="info-row"><span class="k">E&amp;O Insurance</span><span class="v">${statusBadge("Active")}</span></div>
+          <div class="info-row"><span class="k">CE Hours (this cycle)</span><span class="v">14 / 24 hrs</span></div>
+        </div>
+        <div class="card-head" style="margin-top:6px;"><h3>Role Permissions</h3></div>
+        <div style="padding:16px 20px;" class="cell-sub">
+          ${roleDescription(u.role)}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function roleDescription(role) {
+  const map = {
+    [ROLES.ADMIN]: "Full organization access: manage all agents, view agency-wide production, commissions, and billing across every downline.",
+    [ROLES.PARTNER]: "Manages a full downline of Senior Producers and Associates. Views team-wide production, commissions, and submitted business for the entire hierarchy.",
+    [ROLES.SENIOR]: "Manages a small downline of Associates. Views own book of business plus direct reports' pipeline and commissions.",
+    [ROLES.ASSOCIATE]: "Individual producer access. Views and manages own prospects, clients, commissions, and submitted business only.",
+  };
+  return map[role];
+}
+
+/* -------------------------------------------------------------------------
+   Shared partials
+   ------------------------------------------------------------------------- */
+function toolbar(placeholder) {
+  return `
+    <div class="toolbar">
+      <div class="search-input">${ICONS.search}<input type="text" placeholder="${esc(placeholder)}" /></div>
+      <button class="filter-chip">${ICONS.filter} Filter</button>
+      <button class="filter-chip" id="refreshBtn">${ICONS.refresh} Refresh</button>
+    </div>
+  `;
+}
+function emptyRow(cols) {
+  return `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-muted);padding:28px;">No records found</td></tr>`;
+}
+function emptyState(title, message, icon) {
+  return `
+    <div class="page-head"><div><h1>${esc(title)}</h1></div></div>
+    <div class="card card-pad" style="text-align:center;padding:56px 24px;">
+      <div class="stat-icon blue" style="width:52px;height:52px;margin:0 auto 16px;">${ICONS[icon] || ICONS.users}</div>
+      <h3 style="margin-bottom:8px;">Nothing here yet</h3>
+      <p class="cell-sub" style="max-width:420px;margin:0 auto;">${esc(message)}</p>
+    </div>
+  `;
+}
+
+/* -------------------------------------------------------------------------
+   Modals (Add Prospect / Add Client / Submit Business / Start E-App / Edit Profile)
+   ------------------------------------------------------------------------- */
+const MODAL_CONFIG = {
+  prospect: {
+    title: "Add Prospect",
+    fields: [
+      { key: "name", label: "Full Name", type: "text", required: true, placeholder: "e.g. Taylor Morgan" },
+      { key: "phone", label: "Phone", type: "text", placeholder: "(555) 555-5555" },
+      { key: "stage", label: "Stage", type: "select", options: ["New Lead", "Contacted", "Appointment Set", "Quoted"] },
+      { key: "source", label: "Source", type: "select", options: ["Referral", "Web Form", "Facebook Ad", "Seminar", "Cold Call"] },
+      { key: "premium", label: "Est. Premium ($)", type: "number", placeholder: "5000" },
+    ],
+    submit: (payload) => api.createProspect(payload),
+    reload: "prospects",
+  },
+  client: {
+    title: "Add Client",
+    fields: [
+      { key: "name", label: "Client Name", type: "text", required: true, placeholder: "e.g. Taylor & Jamie Morgan" },
+      { key: "policyType", label: "Policy Type", type: "select", options: ["Term Life 20", "Term Life 30", "Whole Life", "Indexed Universal Life", "Fixed Annuity", "Indexed Annuity", "Medicare Supplement", "Final Expense"] },
+      { key: "carrier", label: "Carrier", type: "select", options: ["Pinnacle Mutual", "Everstone Life", "Granite Peak Financial", "BlueCrest Health"] },
+      { key: "premium", label: "Premium ($)", type: "number", placeholder: "1200" },
+      { key: "status", label: "Status", type: "select", options: ["Pending", "In Force"] },
+    ],
+    submit: (payload) => api.createClient(payload),
+    reload: "clients",
+  },
+  submitted: {
+    title: "Submit New Business",
+    fields: [
+      { key: "client", label: "Client Name", type: "text", required: true, placeholder: "e.g. Taylor Morgan" },
+      { key: "carrier", label: "Carrier", type: "select", options: ["Pinnacle Mutual", "Everstone Life", "Granite Peak Financial", "BlueCrest Health"] },
+      { key: "product", label: "Product", type: "text", placeholder: "e.g. Term Life 20" },
+      { key: "faceAmount", label: "Face Amount ($)", type: "number", placeholder: "250000" },
+    ],
+    submit: (payload) => api.createSubmitted(payload),
+    reload: "submitted",
+  },
+  eapp: {
+    title: "Start E-Application",
+    fields: [
+      { key: "client", label: "Client Name", type: "text", required: true, placeholder: "e.g. Taylor Morgan" },
+      { key: "carrier", label: "Carrier", type: "select", options: ["Pinnacle Mutual", "Everstone Life", "Granite Peak Financial", "BlueCrest Health"] },
+    ],
+    submit: (payload) => api.createEapp(payload),
+    reload: "eapps",
+  },
+  profile: {
+    title: "Edit Profile",
+    fields: [
+      { key: "email", label: "Email", type: "text", placeholder: "you@2strongfinancial.com" },
+      { key: "phone", label: "Phone", type: "text", placeholder: "(555) 555-5555" },
+    ],
+    submit: (payload) => api.updateProfile(payload),
+    reload: "profile",
+  },
+};
+
+function openModal(kind) {
+  const cfg = MODAL_CONFIG[kind];
+  if (!cfg) return;
+  closeModal();
+  const wrap = document.createElement("div");
+  wrap.className = "modal-overlay";
+  wrap.id = "modalOverlay";
+  wrap.innerHTML = `
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>${esc(cfg.title)}</h3>
+        <button class="icon-btn" id="modalClose">${ICONS.xCircle}</button>
+      </div>
+      <form id="modalForm" class="modal-form">
+        ${cfg.fields.map((f) => `
+          <div class="form-field">
+            <label>${esc(f.label)}${f.required ? " *" : ""}</label>
+            ${f.type === "select"
+              ? `<select name="${f.key}">${f.options.map((o) => `<option value="${esc(o)}">${esc(o)}</option>`).join("")}</select>`
+              : `<input type="${f.type}" name="${f.key}" placeholder="${esc(f.placeholder || "")}" ${f.required ? "required" : ""} />`}
+          </div>
+        `).join("")}
+        <div id="modalError" class="auth-error" style="display:none;"></div>
+        <div class="modal-actions">
+          <button type="button" class="btn" id="modalCancel">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+  document.getElementById("modalClose").addEventListener("click", closeModal);
+  document.getElementById("modalCancel").addEventListener("click", closeModal);
+  wrap.addEventListener("click", (e) => { if (e.target === wrap) closeModal(); });
+
+  document.getElementById("modalForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = {};
+    cfg.fields.forEach((f) => {
+      let v = fd.get(f.key);
+      if (f.type === "number") v = v === "" ? 0 : Number(v);
+      payload[f.key] = v;
+    });
+    const errEl = document.getElementById("modalError");
+    try {
+      await cfg.submit(payload);
+      closeModal();
+      await loadAndRenderPage();
+    } catch (err) {
+      errEl.textContent = err.message || "Something went wrong";
+      errEl.style.display = "block";
+    }
+  });
+}
+function closeModal() {
+  const el = document.getElementById("modalOverlay");
+  if (el) el.remove();
+}
+
+/* -------------------------------------------------------------------------
+   Router / boot
+   ------------------------------------------------------------------------- */
+function getRouteFromHash() {
+  const h = location.hash.replace(/^#\/?/, "");
+  return PAGE_LOADERS[h] ? h : "dashboard";
+}
+
+async function render() {
+  if (!state.user) {
+    try {
+      const res = await api.me();
+      state.user = res.user;
+    } catch (e) {
+      return renderLogin();
+    }
+  }
+
+  state.route = getRouteFromHash();
+  const user = state.user;
+  if (state.route === "team" && user.role === ROLES.ASSOCIATE) {
+    location.hash = "#/dashboard";
+    state.route = "dashboard";
+  }
+
+  const root = document.getElementById("app");
+  root.className = "app-shell";
+  root.innerHTML = `
+    ${renderSidebar()}
+    <div class="main-col">
+      ${renderTopbar()}
+      <div class="page-content" id="pageContent">
+        <div class="loading-block">Loading…</div>
+      </div>
+    </div>
+  `;
+  bindShellEvents();
+  await loadAndRenderPage();
+}
+
+async function loadAndRenderPage() {
+  const content = document.getElementById("pageContent");
+  if (!content) return;
+  try {
+    const data = await PAGE_LOADERS[state.route]();
+    content.innerHTML = PAGE_RENDERERS[state.route](data);
+    bindPageEvents();
+  } catch (e) {
+    if (e instanceof AuthRequiredError) {
+      state.user = null;
+      return renderLogin();
+    }
+    content.innerHTML = `<div class="card card-pad" style="text-align:center;padding:40px;color:var(--red);">Failed to load: ${esc(e.message)}</div>`;
+  }
+}
+
+function bindShellEvents() {
+  const hamburger = document.getElementById("hamburgerBtn");
+  const overlay = document.getElementById("overlay");
+  const shell = document.getElementById("app");
+  if (hamburger) hamburger.addEventListener("click", () => shell.classList.toggle("nav-open"));
+  if (overlay) overlay.addEventListener("click", () => shell.classList.remove("nav-open"));
+  document.querySelectorAll(".nav-item").forEach((a) =>
+    a.addEventListener("click", () => document.getElementById("app").classList.remove("nav-open"))
+  );
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", async () => {
+      await api.logout();
+      state.user = null;
+      location.hash = "#/dashboard";
+      render();
+    });
+  }
+}
+
+function bindPageEvents() {
+  document.querySelectorAll("[data-modal]").forEach((btn) => {
+    btn.addEventListener("click", () => openModal(btn.dataset.modal));
+  });
+  const refreshBtn = document.getElementById("refreshBtn");
+  if (refreshBtn) refreshBtn.addEventListener("click", loadAndRenderPage);
+}
+
+window.addEventListener("hashchange", render);
+window.addEventListener("DOMContentLoaded", () => {
+  if (!location.hash) location.hash = "#/dashboard";
+  render();
+});
+
+</script>
+</body>
+</html>
